@@ -1,6 +1,19 @@
 from fastapi import FastAPI
 import requests
 import os
+from google.cloud import firestore
+
+# Configurar la clave directamente en el código
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "C:\\Users\\vegal\\clave\\mi-clave.json"
+
+# Conectar con Firestore
+db = firestore.Client()
+
+# Prueba: guardar un dato en Firestore
+doc_ref = db.collection("pruebas").document("demo")
+doc_ref.set({"mensaje": "¡Conexión exitosa con Firestore!"})
+
+print("Datos guardados en Firestore correctamente.")
 from dotenv import load_dotenv
 from google.cloud import firestore
 
