@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Weather API Frontend</title>
+  <style>
+    body { font-family: Arial; padding: 20px; background: #f0f2f5; }
+    h1 { color: #333; }
+    input, button { padding: 8px; margin: 5px; }
+    .card { background: white; border-radius: 10px; padding: 15px; margin: 10px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .forecast-item { border-bottom: 1px solid #eee; padding: 5px 0; }
+  </style>
+</head>
+<body>
+  <h1>🌤️ Clima - Weather API</h1>
+
+  <input type="text" id="city" placeholder="Ingrese una ciudad" />
+  <button onclick="getWeather()">Consultar clima</button>
+  <button onclick="getForecast()">Pronóstico 5 días</button>
+  <button onclick="getHistory()">Ver historial</button>
+
+  <div id="weather" class="card"></div>
+  <div id="forecast" class="card"></div>
+  <div id="history" class="card"></div>
+
+  <script>
+    const baseUrl = "http://127.0.0.1:8000";  // Cambia esta URL si haces deploy
+
+    async function getWeather() {
+      const city = document.getElementById("city").value;
+      const res = await fetch(`${baseUrl}/weather?city=${city}`);
+      const data = await res.json();
+
+      const weatherDiv = document.getElementById("weather");
+      if (data.error) {
+        weatherDiv.innerHTML = `<p style="color:red;">❌ ${data.error}</p>`;
+      } else {
+        weatherDiv.innerHTML = `
+          <h3>Clima actual en ${data.ciudad}</h3>
+          <p>🌡️ Temperatura: ${data.temperatura}°C</p>
+          <p>☁️ Descripción: ${data.descripcion}</p>
+        `;
+      }
+    }
+
+    async function getForecast() {
+      const city = document.getElementById("city").value;
+      const res = await fetch(`${baseUrl}/forecast?city=${city}`);
+      const data = await res.json();
+
+      const forecastDiv = document.getElementById("forecast");
+      if (data.error) {
+        forecastDiv.innerHTML = `<p style="color:red;">❌ ${data.error}</p>`;
+      } else {
+        forecastDiv.innerHTML = `<h3>Pronóstico para ${data.ciudad}</h3>`;
+        data.pronostico.slice(0, 10).forEach(item => {
+          forecastDiv.innerHTML += `
+            <div class="forecast-item">
+              <p><strong>${item.fecha}</strong></p>
+              <p>🌡️ ${item.temperatura}°C - ☁️ ${item.descripcion}</p>
+            </div>
+          `;
+        });
+      }
+    }
+
+    async function getHistory() {
+      const res = await fetch(`${baseUrl}/history`);
+      const data = await res.json();
+
+      const historyDiv = document.getElementById("history");
+      historyDiv.innerHTML = `<h3>Historial de consultas</h3>`;
+      data.historial.forEach(item => {
+        historyDiv.innerHTML += `
+          <p>📍 ${item.ciudad} - 🌡️ ${item.temperatura}°C</p>
+        `;
+      });
+    }
+  </script>
+</body>
+</html>

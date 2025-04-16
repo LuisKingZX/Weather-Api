@@ -44,8 +44,40 @@ def get_weather(city: str):
     }
 
 @app.get("/history")
-def get_history():
-    """Recupera el historial de consultas"""
+def get_history(city: str = None):
+    """Recupera el historial de consultas, filtrado por ciudad si se especifica."""
     docs = db.collection("historial").stream()
-    historial = [{"ciudad": doc.to_dict()["ciudad"], "temperatura": doc.to_dict()["temperatura"]} for doc in docs]
+    
+    historial = []
+    for doc in docs:
+        data = doc.to_dict()
+        if city is None or data["ciudad"].lower() == city.lower():
+            historial.append({"ciudad": data["ciudad"], "temperatura": data["temperatura"]})
+    
     return {"historial": historial}
+
+
+@app.get("/forecast")
+def get_forecast(city: str):
+    """Obtiene el pronóstico del clima para los próximos 5 días."""
+    import requests
+
+    API_KEY = "6286dfc652ee0da7962d5426fada42e4"
+    url = f"https://api.openweathermap.org/data/2.5/forecast?q={city}&appid={API_KEY}&units=metric"
+
+    response = requests.get(url)
+    data = response.json()
+
+    if response.status_code != 200:
+        return {"error": "No se pudo obtener el pronóstico", "detalle": data}
+
+    forecast_list = []
+    for item in data["list"]:
+        forecast_list.append({
+            "fecha": item["dt_txt"],
+            "temperatura": item["main"]["temp"],
+            "descripcion": item["weather"][0]["description"]
+        })
+
+    return {"ciudad": city, "pronostico": forecast_list}
+
