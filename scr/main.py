@@ -11,6 +11,20 @@ db = firestore.Client()
 # Crear la API
 app = FastAPI()
 
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+
+# Habilitar CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # O especifica "http://127.0.0.1" si prefieres limitarlo
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 @app.get("/")
 def home():
     return {"mensaje": "API funcionando correctamente"}
