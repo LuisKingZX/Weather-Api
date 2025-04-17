@@ -8,6 +8,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY ./scr ./scr
 
-ENV PORT=8080
-
 CMD ["python", "-m", "scr.start"]
