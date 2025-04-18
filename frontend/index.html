@@ -4,27 +4,59 @@
   <meta charset="UTF-8" />
   <title>Weather API Frontend</title>
   <style>
-    body { font-family: Arial; padding: 20px; background: #f0f2f5; }
-    h1 { color: #333; }
-    input, button { padding: 8px; margin: 5px; }
-    .card { background: white; border-radius: 10px; padding: 15px; margin: 10px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    .forecast-item { border-bottom: 1px solid #eee; padding: 5px 0; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f0f2f5;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1 {
+      color: #333;
+    }
+    input, button {
+      padding: 8px;
+      margin: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #007BFF;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 10px 0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .forecast-item {
+      border-bottom: 1px solid #eee;
+      padding: 5px 0;
+    }
   </style>
 </head>
 <body>
-  <h1>🌤️ Clima - Weather API</h1>
+  <h1>🌤️ Weather API</h1>
 
   <input type="text" id="city" placeholder="Ingrese una ciudad" />
+  <br/>
   <button onclick="getWeather()">Consultar clima</button>
   <button onclick="getForecast()">Pronóstico 5 días</button>
   <button onclick="getHistory()">Ver historial</button>
+  <button onclick="exportCSV()">Exportar CSV</button>
 
   <div id="weather" class="card"></div>
   <div id="forecast" class="card"></div>
   <div id="history" class="card"></div>
 
   <script>
-    const baseUrl = "http://127.0.0.1:8000";  // Cambia esta URL si haces deploy
+    const baseUrl = "http://127.0.0.1:8000"; // Cambiar si haces deploy
 
     async function getWeather() {
       const city = document.getElementById("city").value;
@@ -65,7 +97,8 @@
     }
 
     async function getHistory() {
-      const res = await fetch(`${baseUrl}/history`);
+      const city = document.getElementById("city").value;
+      const res = await fetch(`${baseUrl}/history${city ? `?city=${city}` : ""}`);
       const data = await res.json();
 
       const historyDiv = document.getElementById("history");
@@ -76,6 +109,19 @@
         `;
       });
     }
+
+    async function exportCSV() {
+      const res = await fetch(`${baseUrl}/export?format=csv`);
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "historial.csv";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
   </script>
 </body>
 </html>
+

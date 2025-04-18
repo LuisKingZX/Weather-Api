@@ -1,6 +1,9 @@
 import os
 from fastapi import FastAPI
 from google.cloud import firestore
+from fastapi.responses import StreamingResponse, JSONResponse
+import io
+import csv
 
 # Configurar la autenticación con Firestore
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "C:\\Users\\vegal\\clave\\mi-clave.json"
@@ -94,4 +97,34 @@ def get_forecast(city: str):
         })
 
     return {"ciudad": city, "pronostico": forecast_list}
+
+
+@app.get("/export")
+def export_history(format: str = "json"):
+    """Exporta el historial de Firestore en formato CSV o JSON"""
+
+    docs = db.collection("historial").stream()
+    historial = [doc.to_dict() for doc in docs]
+
+    if format.lower() == "csv":
+        # Crear archivo CSV en memoria
+        output = io.StringIO()
+        writer = csv.DictWriter(output, fieldnames=["ciudad", "temperatura", "descripcion"])
+        writer.writeheader()
+        for item in historial:
+            writer.writerow({
+                "ciudad": item.get("ciudad", ""),
+                "temperatura": item.get("temperatura", ""),
+                "descripcion": item.get("descripcion", "")
+            })
+
+        output.seek(0)
+        return StreamingResponse(
+            output,
+            media_type="text/csv",
+            headers={"Content-Disposition": "attachment; filename=historial.csv"}
+        )
+
+    # Formato JSON (por defecto)
+    return JSONResponse(content=historial)
 
