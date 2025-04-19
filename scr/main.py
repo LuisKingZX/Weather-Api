@@ -32,7 +32,7 @@ def home():
 @app.get("/weather")
 def get_weather(city: str):
     try:
-        api_key = os.getenv("OPENWEATHER_API_KEY")  # Usar variable de entorno segura
+        api_key = os.getenv("_OPENWEATHER_API_KEY")  # Usar variable de entorno segura
         url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric&lang=es"
         response = requests.get(url)
         data = response.json()
