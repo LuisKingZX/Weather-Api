@@ -52,7 +52,7 @@ def get_weather(city: str):
 @app.get("/forecast")
 def get_forecast(city: str):
     try:
-        api_key = os.getenv("OPENWEATHER_API_KEY")
+        api_key = os.getenv("_OPENWEATHER_API_KEY")
         url = f"http://api.openweathermap.org/data/2.5/forecast?q={city}&appid={api_key}&units=metric&lang=es"
         response = requests.get(url)
         data = response.json()
