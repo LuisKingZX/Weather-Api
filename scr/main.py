@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi.responses import StreamingResponse, JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 import requests
 import os
 from google.cloud import firestore
@@ -25,14 +26,18 @@ if not os.getenv("K_SERVICE"):  # K_SERVICE existe solo en Cloud Run
 # Inicializar cliente de Firestore
 db = firestore.Client()
 
+# Montar carpeta de archivos estáticos (html, css, etc.)
+app.mount("/static", StaticFiles(directory="scr/static"), name="static")
+
+# Mostrar index.html al acceder a /
 @app.get("/")
-def home():
-    return {"mensaje": "API del clima"}
+def root():
+    return FileResponse("scr/static/index.html")
 
 @app.get("/weather")
 def get_weather(city: str):
     try:
-        api_key = os.getenv("OPENWEATHER_API_KEY")  # Usar variable de entorno segura
+        api_key = os.getenv("OPENWEATHER_API_KEY")
         url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric&lang=es"
         response = requests.get(url)
         data = response.json()
@@ -58,7 +63,7 @@ def get_forecast(city: str):
         data = response.json()
 
         pronostico = []
-        for i in range(0, len(data["list"]), 8):  # Cada 8 = una vez por día
+        for i in range(0, len(data["list"]), 8):
             dia = data["list"][i]
             pronostico.append({
                 "fecha": dia["dt_txt"],
@@ -113,3 +118,4 @@ def export_history(format: str = "json"):
 
     except Exception as e:
         return {"error": "No se pudo exportar el historial"}
+
